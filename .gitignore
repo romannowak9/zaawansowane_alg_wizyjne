@@ -5,3 +5,11 @@ lab01_intro/
 **/pedestrian/
 **/BSUV/
 **/sequences/
+**/KITTI/
+**/small_KITTI/
+
+*.zip
+*.tar.xz
+*.xz
+*.tar
+*.rar
