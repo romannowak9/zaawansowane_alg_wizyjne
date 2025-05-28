@@ -68,8 +68,8 @@ def IoU(rect1, rect2):
 
 ############# METHOD ###############
 # Wybierz metodę fuzji
-#FUSION = "LATE"
-FUSION = "EARLY"
+FUSION = "LATE"
+# FUSION = "EARLY"
 
 ############# TODO0 ###############
 # Ustaw ścieżki
@@ -102,7 +102,11 @@ for i in range(200, 300): # można zmieniać range do 518
         # 3. Wartość trzeciego kanału nowej ramki to maksimum z wartości trzeciego kanału RGB i obrazu z termowizji (jednokanałowego)
         #    Użyj w tym celu np.maximum(a, b). Gdzie a i b to 3 kanał RGB oraz termowizja
         # 4. Zrzutuj "new_fus" na "uint8" (new_fus.astype("uint8"))
-        new_fus = None
+        
+        new_fus = np.zeros(img_rgb.shape, dtype=np.uint8)
+        new_fus[:, :, :2] = img_rgb[:, :, :2]
+        new_fus[:, :, 2] = np.maximum(img_rgb[:, :, 2], img_thermal)
+        new_fus.astype("uint8")
 
         ####################################
         out_img = new_fus
@@ -120,9 +124,20 @@ for i in range(200, 300): # można zmieniać range do 518
         # prostokątów otaczających) oraz z wyliczonej dla nich wartości IoU. Przykład: W danej iteracji podwójnej
         # pętli dotarliśmy do 3 prostokąta z "Rect1" i 4 prostokąta z "Rect2". Ich wspólna wartość IoU to 0.55.
         # Do tablicy "boxes_iou" dodajemy więc listę [(3, 4), 0.55].
+        
+        boxes_iou = []
+        for i, rect1 in enumerate(Rect1):
+            for j, rect2 in enumerate(Rect2):
+                iou = IoU(rect1, rect2)
+                if iou > 0:
+                    boxes_iou.append([(i, j), iou])
         # 2. Następnie posortuj "boxes_iou" malejąco po wartości IoU. Użyj do tego funkcji sorted() z parametrami
         # key=lambda a: a[1] oraz reverse=True.
+        boxes_iou = sorted(boxes_iou, key=lambda x: x[1], reverse=True)
         # 3. Utwórz puste listy "Rect1_paired", "Rect2_paired" i "paired_boxes".
+        Rect1_paired = []
+        Rect2_paired = []
+        paired_boxes = []
         # 4. Utwórz pętlę po elementach "boxes_iou". W każdej iteracji z aktualnie przetwarzanego elementu wyciągnij
         # krotkę z indeksami(elem[0]) oraz wartość IoU(elem[1]). Jeśli pierwszy indeks z krotki nie występuje
         # w liście "Rect1_paired" oraz drugi element z krotki nie występuje w liście "Rect2_paired", to do
@@ -130,6 +145,11 @@ for i in range(200, 300): # można zmieniać range do 518
         # odpowiednie indeksy z krotki (pierwszy do pierwszej z list i drugi do drugiej).
         # W taki sposób otrzymaliśmy listę "paired_boxes", która zawiera pary indeksów prostokątów z list "Rect1"
         # i "Rect2", które należy połączyć (uśrednić ich elementy), co zostanie opisane w punkcie 5.
+        for (idx1, idx2), iou in boxes_iou:
+            if idx1 not in Rect1_paired and idx2 not in Rect2_paired:
+                paired_boxes.append((idx1, idx2))
+                Rect1_paired.append(idx1)
+                Rect2_paired.append(idx2) 
         # 5. Na koniec tworzymy pustą listę "boxes". Iterujemy po krotkach w "paired_boxes", wyciągamy z "Rect1"
         # prostokąt o indeksie zapisanym jako pierwszy element krotki, a z "Rect2" wyciągamy prostokąt o indeksie
         # zapisanym jako drugi element krotki. Prostokąty mają postać listy 4 elementowej ([x1, y1, w1, h1]).
@@ -138,7 +158,12 @@ for i in range(200, 300): # można zmieniać range do 518
         # (pamiętamy, żeby po wyliczeniu średniej, wynik zrzutować na int, avg_r[0] = int((r1[0]/r2[0])/2) i tak dla
         # wszystkich 4 elementów. Na koniec appendujemy "avg_r" do listy "boxes". W taki sposób format listy "boxes"
         # będzie taki sam jak format list "Rect1" i "Rect2".
-        boxes = None
+        boxes = []
+        for idx1, idx2 in paired_boxes:
+            r1 = Rect1[idx1]
+            r2 = Rect2[idx2]
+            avg_r = np.mean([np.array(r1), np.array(r2)], axis=0).astype(int)
+            boxes.append(list(avg_r))
 
         ######################################
     out_boxes = filter_boxes(boxes)

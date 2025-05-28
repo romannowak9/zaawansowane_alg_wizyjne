@@ -7,6 +7,15 @@ lab01_intro/
 **/sequences/
 **/KITTI/
 **/small_KITTI/
+**/test_rgb/
+**/test_thermal/
+yolov3_training**
+**/images
+calib.txt
+events.txt
+groundtruth.txt
+images.txt
+imu.txt
 
 *.zip
 *.tar.xz
