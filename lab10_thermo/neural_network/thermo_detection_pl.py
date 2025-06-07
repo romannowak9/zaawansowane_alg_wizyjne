@@ -68,8 +68,8 @@ def IoU(rect1, rect2):
 
 ############# METHOD ###############
 # Wybierz metodę fuzji
-FUSION = "LATE"
-# FUSION = "EARLY"
+# FUSION = "LATE"
+FUSION = "EARLY"
 
 ############# TODO0 ###############
 # Ustaw ścieżki

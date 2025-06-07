@@ -16,6 +16,10 @@ events.txt
 groundtruth.txt
 images.txt
 imu.txt
+**/neg/
+**/pos/
+**/data/
+**/siamfc.pth
 
 *.zip
 *.tar.xz
